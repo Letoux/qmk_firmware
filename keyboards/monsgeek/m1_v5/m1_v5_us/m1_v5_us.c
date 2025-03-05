@@ -342,7 +342,11 @@ bool process_record_wls(uint16_t keycode, keyrecord_t *record) {
 }
 #endif
 
+uint8_t mod_state;
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+
+    mod_state = get_mods();
 
     if (test_white_light_flag && record->event.pressed) {
         test_white_light_flag = false;
@@ -354,17 +358,31 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
 
     switch (keycode) {
-        case MO(_FL):
-        case MO(_MFL): {
-            if (!record->event.pressed && rgbrec_is_started()) {
-                if (no_record_fg == true) {
-                    no_record_fg = false;
-                    rgbrec_register_record(keycode, record);
+        case KC_BSLS: { // Intercepter la touche backslash/pipe
+            if (record->event.pressed) { // Si la touche est pressée
+                if (mod_state & MOD_MASK_SHIFT) {
+                    del_mods(MOD_MASK_SHIFT); // Désactiver Shift
+                    tap_code16(KC_BSLS); // Envoyer un backslash
+                    set_mods(mod_state); // Restaurer Shift
+                } else {
+                    tap_code16(KC_PIPE); // Envoyer un pipe
                 }
-                no_record_fg = true;
+                return false; // Bloquer le comportement par défaut
             }
             break;
         }
+/*         case KC_1: {
+            if (record->event.pressed) {
+                if (get_mods() == MOD_BIT(KC_RALT)) {
+                    send_string("é");
+                } else {
+                    tap_code16(KC_1);
+                }
+                return false;
+            }
+            break;
+        }
+ */        case MO(_FL):
         case RP_END:
         case RP_P0:
         case RP_P1:
