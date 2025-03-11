@@ -344,6 +344,16 @@ bool process_record_wls(uint16_t keycode, keyrecord_t *record) {
 
 uint8_t mod_state;
 
+bool shift_and_ralt_down(void) {
+    if (get_mods() == MOD_BIT(KC_RALT) && get_mods() == MOD_BIT(KC_LSFT)) {
+        return true;
+    }
+    if (get_mods() == MOD_BIT(KC_RALT) && get_mods() == MOD_BIT(KC_RSFT)) {
+        return true;
+    }
+    return false;
+}
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
     mod_state = get_mods();
@@ -371,10 +381,55 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             break;
         }
-/*         case KC_1: {
+        case KC_GRV: { // `
             if (record->event.pressed) {
-                if (get_mods() == MOD_BIT(KC_RALT)) {
-                    send_string("é");
+                if (mod_state == MOD_BIT(KC_RALT)) {
+                    tap_code16(QK_GESC);
+                } else {
+                    del_mods(MOD_MASK_ALT);
+                    tap_code16(KC_GRV);
+                    tap_code16(KC_SPC);
+                    set_mods(mod_state);
+                }
+                return false;
+            }
+            break;
+        }
+        case KC_QUOT: { // ' and "
+            if (record->event.pressed) {
+                if (mod_state == MOD_BIT(KC_LSFT) || mod_state == MOD_BIT(KC_RSFT)) {
+                    del_mods(MOD_MASK_ALT);
+                    tap_code16(KC_QUOT);
+                    tap_code16(KC_SPC);
+                    set_mods(mod_state);
+                } else {
+                    del_mods(MOD_MASK_ALT);
+                    tap_code16(KC_QUOT);
+                    tap_code16(KC_SPC);
+                    set_mods(mod_state);
+                }
+                return false;
+            }
+            break;
+        }
+        case KC_6: { // ^
+            if (record->event.pressed) {
+                if (mod_state == MOD_BIT(KC_LSFT) || mod_state == MOD_BIT(KC_RSFT)) {
+                    del_mods(MOD_MASK_ALT);
+                    tap_code16(KC_6);
+                    tap_code16(KC_SPC);
+                    set_mods(mod_state);
+                } else {
+                    tap_code16(KC_6);
+                }
+                return false;
+            }
+            break;
+        }
+        case KC_1: { // é
+            if (record->event.pressed) {
+                if (mod_state == MOD_BIT(KC_RALT)) {
+                    tap_code16(KC_E);
                 } else {
                     tap_code16(KC_1);
                 }
@@ -382,7 +437,211 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             break;
         }
- */        case MO(_FL):
+        case KC_2: { // è
+            if (record->event.pressed) {
+                if (mod_state == MOD_BIT(KC_RALT)) {
+                    del_mods(MOD_MASK_ALT);
+                    tap_code16(KC_GRV);
+                    tap_code16(KC_E);
+                    set_mods(mod_state);
+                } else {
+                    tap_code16(KC_2);
+                }
+                return false;
+            }
+            break;
+        }
+        case KC_R: { // ê
+            if (record->event.pressed) {
+                if (mod_state == MOD_BIT(KC_RALT)) {
+                    del_mods(MOD_MASK_ALT);
+                    tap_code16(LSFT(KC_6));
+                    tap_code16(KC_E);
+                    set_mods(mod_state);
+                } else {
+                    tap_code16(KC_R);
+                }
+                return false;
+            }
+            break;
+        }
+        case KC_F: { // ë
+            if (record->event.pressed) {
+                if (mod_state == MOD_BIT(KC_RALT)) {
+                    del_mods(MOD_MASK_ALT);                
+                    tap_code16(LSFT(KC_QUOT));
+                    tap_code16(KC_E);
+                    set_mods(mod_state);
+                } else {
+                    tap_code16(KC_F);
+                }
+                return false;
+            }
+            break;
+        }
+        case KC_E: { // €
+            if (record->event.pressed) {
+                if (mod_state == MOD_BIT(KC_RALT)) {
+                    tap_code16(KC_5);
+                } else {
+                    tap_code16(KC_E);
+                }
+                return false;
+            }
+            break;
+        }
+        case KC_A: { // à
+            if (record->event.pressed) {
+                if (mod_state == MOD_BIT(KC_RALT)) {
+                    del_mods(MOD_MASK_ALT);
+                    tap_code16(KC_GRV);
+                    tap_code16(KC_A);
+                    set_mods(mod_state);
+                } else {
+                    tap_code16(KC_A);
+                }
+                return false;
+            }
+            break;
+        }
+        case KC_Q: { // â
+            if (record->event.pressed) {
+                if (mod_state == MOD_BIT(KC_RALT)) {
+                    del_mods(MOD_MASK_ALT);
+                    tap_code16(LSFT(KC_6));
+                    tap_code16(KC_A);
+                    set_mods(mod_state);
+                } else {
+                    tap_code16(KC_Q);
+                }
+                return false;
+            }
+            break;
+        }
+        case KC_W: { // ä
+            if (record->event.pressed) {
+                if (mod_state == MOD_BIT(KC_RALT)) {
+                    del_mods(MOD_MASK_ALT);
+                    tap_code16(LSFT(KC_QUOT));
+                    tap_code16(KC_A);
+                    set_mods(mod_state);
+                } else {
+                    tap_code16(KC_W);
+                }
+                return false;
+            }
+            break;
+        }
+        case KC_I: { // î
+            if (record->event.pressed) {
+                if (mod_state == MOD_BIT(KC_RALT)) {
+                    del_mods(MOD_MASK_ALT);
+                    tap_code16(LSFT(KC_6));
+                    tap_code16(KC_I);
+                    set_mods(mod_state);
+                } else {
+                    tap_code16(KC_I);
+                }
+                return false;
+            }
+            break;
+        }
+        case KC_K: { // ï
+            if (record->event.pressed) {
+                if (mod_state == MOD_BIT(KC_RALT)) {
+                    del_mods(MOD_MASK_ALT);
+                    tap_code16(LSFT(KC_QUOT));
+                    tap_code16(KC_I);
+                    set_mods(mod_state);
+                } else {
+                    tap_code16(KC_K);
+                }
+                return false;
+            }
+            break;
+        }
+        case KC_O: { // ô
+            if (record->event.pressed) {
+                if (mod_state == MOD_BIT(KC_RALT)) {
+                    del_mods(MOD_MASK_ALT);
+                    tap_code16(LSFT(KC_6));
+                    tap_code16(KC_O);
+                    set_mods(mod_state);
+                } else {
+                    tap_code16(KC_O);
+                }
+                return false;
+            }
+            break;
+        }
+        case KC_L: { // ö
+            if (record->event.pressed) {
+                if (mod_state == MOD_BIT(KC_RALT)) {
+                    del_mods(MOD_MASK_ALT);
+                    tap_code16(LSFT(KC_QUOT));
+                    tap_code16(KC_O);
+                    set_mods(mod_state);
+                } else {
+                    tap_code16(KC_L);
+                }
+                return false;
+            }
+            break;
+        }
+        case KC_U: { // ù
+            if (record->event.pressed) {
+                if (mod_state == MOD_BIT(KC_RALT)) {
+                    del_mods(MOD_MASK_ALT);
+                    tap_code16(KC_GRV);
+                    tap_code16(KC_U);
+                    set_mods(mod_state);
+                } else {
+                    tap_code16(KC_U);
+                }
+                return false;
+            }
+            break;
+        }
+        case KC_J: { // û
+            if (record->event.pressed) {
+                if (mod_state == MOD_BIT(KC_RALT)) {
+                    del_mods(MOD_MASK_ALT);
+                    tap_code16(LSFT(KC_6));
+                    tap_code16(KC_U);
+                    set_mods(mod_state);
+                } else {
+                    tap_code16(KC_J);
+                }
+                return false;
+            }
+            break;
+        }
+        case KC_SCLN: { // ü
+            if (record->event.pressed) {
+                if (mod_state == MOD_BIT(KC_RALT)) {
+                    del_mods(MOD_MASK_ALT);
+                    tap_code16(LSFT(KC_QUOT));
+                    tap_code16(KC_U);
+                    set_mods(mod_state);
+                } else {
+                    tap_code16(KC_SCLN);
+                }
+                return false;
+            }
+            break;
+        }
+        case KC_C: { // ç
+            if (record->event.pressed) {
+                if (mod_state == MOD_BIT(KC_RALT)) {
+                    tap_code16(KC_COMM);
+                } else {
+                    tap_code16(KC_C);
+                }
+                return false;
+            }
+            break;
+        }
+        case MO(_FL):
         case RP_END:
         case RP_P0:
         case RP_P1:
