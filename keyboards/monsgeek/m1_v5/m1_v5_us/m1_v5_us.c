@@ -38,9 +38,10 @@ typedef struct {
 enum layers {
     _BL = 0,
     _FL,
+    _FBL,
+    _RALT,
     _MBL,
     _MFL,
-    _FBL,
 };
 
 hs_rgb_indicator_t hs_rgb_indicators[HS_RGB_INDICATOR_COUNT];
@@ -665,6 +666,31 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
 
     return true;
+}
+
+bool encoder_update_user(uint8_t index, bool clockwise) {
+    mod_state = get_mods();
+
+    if (index == 0) {
+        if (mod_state & MOD_BIT(KC_LALT)) {
+            del_mods(MOD_BIT(KC_LALT));
+
+            if (clockwise) {
+                tap_code16(KC_RGHT);
+            } else {
+                tap_code16(KC_LEFT);
+            }
+
+            set_mods(mod_state);
+        } else {
+            if (clockwise) {
+                tap_code16(KC_DOWN);
+            } else {
+                tap_code16(KC_UP);
+            }
+        }
+    }
+    return false;
 }
 
 void im_rgblight_increase(void) {
