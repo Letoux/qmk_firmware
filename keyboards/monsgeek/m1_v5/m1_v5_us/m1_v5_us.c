@@ -5,6 +5,10 @@
 #include "wls/wls.h"
 #include "rgb_record/rgb_record.h"
 
+// colors
+#include "rgb_matrix.h"
+#include "math.h"
+
 #ifdef WIRELESS_ENABLE
 #    include "wireless.h"
 #    include "usb_main.h"
@@ -690,6 +694,43 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
             }
         }
     }
+    return false;
+}
+
+// 💥 Palette bien flashy
+const uint8_t hue_palette[] = { 96, 32, 224, 192, 144 };
+#define PALETTE_SIZE (sizeof(hue_palette) / sizeof(hue_palette[0]))
+
+// Interpolation douce entre deux teintes
+uint8_t interpolate_hue(uint8_t h1, uint8_t h2, float t) {
+    int diff = h2 - h1;
+    if (abs(diff) > 127) {
+        if (diff > 0) diff -= 255;
+        else diff += 255;
+    }
+    int result = h1 + diff * t;
+    return (uint8_t)(result % 256);
+}
+
+bool rgb_matrix_indicators_user(void) {
+    uint16_t now = timer_read();
+    
+    // ⏳ Animation lente pour fade progressif
+    float anim_pos = fmod(now / 1500.0f, PALETTE_SIZE);
+    int index = (int)anim_pos;
+    float blend = anim_pos - index;
+
+    uint8_t base_hue = interpolate_hue(hue_palette[index], hue_palette[(index + 1) % PALETTE_SIZE], blend);
+
+    for (uint8_t i = 0; i < RGB_MATRIX_LED_COUNT; i++) {
+        // ✨ Teinte décalée spatialement LED par LED
+        uint8_t led_hue = (base_hue + i * 10) % 256;
+
+        HSV hsv = { .h = led_hue, .s = 255, .v = 230 };
+        RGB rgb = hsv_to_rgb(hsv);
+        rgb_matrix_set_color(i, rgb.r, rgb.g, rgb.b);
+    }
+
     return false;
 }
 
