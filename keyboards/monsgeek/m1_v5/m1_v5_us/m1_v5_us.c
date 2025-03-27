@@ -349,15 +349,15 @@ bool process_record_wls(uint16_t keycode, keyrecord_t *record) {
 
 uint8_t mod_state;
 
-bool shift_and_ralt_down(void) {
-    if (get_mods() == MOD_BIT(KC_RALT) && get_mods() == MOD_BIT(KC_LSFT)) {
-        return true;
-    }
-    if (get_mods() == MOD_BIT(KC_RALT) && get_mods() == MOD_BIT(KC_RSFT)) {
-        return true;
-    }
-    return false;
-}
+// bool shift_and_ralt_down(void) {
+//     if (get_mods() == MOD_BIT(KC_RALT) && get_mods() == MOD_BIT(KC_LSFT)) {
+//         return true;
+//     }
+//     if (get_mods() == MOD_BIT(KC_RALT) && get_mods() == MOD_BIT(KC_RSFT)) {
+//         return true;
+//     }
+//     return false;
+// }
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
@@ -370,6 +370,12 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
     if (*md_getp_state() == MD_STATE_CONNECTED) {
         hs_rgb_blink_set_timer(timer_read32());
+    }
+
+    if (keycode == KC_SPC && record->event.pressed) {
+        wait_ms(10);
+        tap_code16(KC_SPC);
+        return false;
     }
 
     switch (keycode) {
