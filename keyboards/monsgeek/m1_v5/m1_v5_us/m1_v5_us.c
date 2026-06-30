@@ -76,6 +76,7 @@ bool lower_sleep = false;
 uint8_t buff[]   = {14, 8, 2, 1, 1, 1, 1, 1, 1, 1, 0};
 
 static bool esc_held = false;
+uint8_t custom_rgb_mode = 1;
 
 void eeconfig_confinfo_update(uint32_t raw) {
 
@@ -381,6 +382,50 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
 
     switch (keycode) {
+        case KC_F1:
+            if (record->event.pressed &&
+                (mod_state & MOD_MASK_CTRL) &&
+                (mod_state & MOD_MASK_SHIFT)) {
+                custom_rgb_mode = 1;
+                return false;
+            }
+            break;
+
+        case KC_F2:
+            if (record->event.pressed &&
+                (mod_state & MOD_MASK_CTRL) &&
+                (mod_state & MOD_MASK_SHIFT)) {
+                custom_rgb_mode = 2;
+                return false;
+            }
+            break;
+
+        case KC_F3:
+            if (record->event.pressed &&
+                (mod_state & MOD_MASK_CTRL) &&
+                (mod_state & MOD_MASK_SHIFT)) {
+                custom_rgb_mode = 3;
+                return false;
+            }
+            break;
+
+        case KC_F4:
+            if (record->event.pressed &&
+                (mod_state & MOD_MASK_CTRL) &&
+                (mod_state & MOD_MASK_SHIFT)) {
+                custom_rgb_mode = 4;
+                return false;
+            }
+            break;
+
+        case KC_F5:
+            if (record->event.pressed &&
+                (mod_state & MOD_MASK_CTRL) &&
+                (mod_state & MOD_MASK_SHIFT)) {
+                custom_rgb_mode = 5;
+                return false;
+            }
+            break;
         case KC_ESC: {
             esc_held = record->event.pressed;
             return true; // garde comportement ESC normal
@@ -738,21 +783,168 @@ uint8_t interpolate_hue(uint8_t h1, uint8_t h2, float t) {
 
 bool rgb_matrix_indicators_user(void) {
     uint16_t now = timer_read();
-    
-    // ⏳ Animation lente pour fade progressif
-    float anim_pos = fmod(now / 1500.0f, PALETTE_SIZE);
-    int index = (int)anim_pos;
-    float blend = anim_pos - index;
 
-    uint8_t base_hue = interpolate_hue(hue_palette[index], hue_palette[(index + 1) % PALETTE_SIZE], blend);
+    switch (custom_rgb_mode) {
 
-    for (uint8_t i = 0; i < RGB_MATRIX_LED_COUNT; i++) {
-        // ✨ Teinte décalée spatialement LED par LED
-        uint8_t led_hue = (base_hue + i * 10) % 256;
+        // ==========================
+        // Mode 1 : Neon random stable + fade global
+        // ==========================
+        case 1: {
 
-        HSV hsv = { .h = led_hue, .s = 255, .v = 230 };
-        RGB rgb = hsv_to_rgb(hsv);
-        rgb_matrix_set_color(i, rgb.r, rgb.g, rgb.b);
+            const uint8_t neon_hues[] = {
+                218, // magenta électrique
+                132, // cyan laser
+                100, // vert acide
+                168, // bleu plasma
+                20,  // orange toxic
+                0,   // rouge laser pur
+                70,  // jaune highlighter
+                190, // violet UV
+            };
+
+            const uint8_t NEON_COUNT = sizeof(neon_hues) / sizeof(neon_hues[0]);
+
+            uint16_t now = timer_read();
+
+            for (uint8_t i = 0; i < RGB_MATRIX_LED_COUNT; i++) {
+
+                uint32_t seed = i * 9127;
+
+                // cycle lent et désynchronisé par touche
+                uint16_t cycle = 12000 + (seed % 6000);
+
+                float t = (now + seed) % cycle;
+                float fade = t / (float)cycle;
+
+                float f = fade;
+
+                /* compression vers le centre */
+                f = 0.5f - 0.5f * cosf(f * 3.1415926f);
+
+                /* ralentit encore les extrêmes */
+                f = powf(f, 1.8f);
+
+                float smooth = f;
+                
+                // =========================
+                // COULEUR DYNAMIQUE (sans blink)
+                // =========================
+
+                float color_pos = smooth * NEON_COUNT;
+                int idx = (int)color_pos;
+                float blend = color_pos - idx;
+
+                uint8_t h1 = neon_hues[idx % NEON_COUNT];
+                uint8_t h2 = neon_hues[(idx + 1) % NEON_COUNT];
+
+                int diff = (int)h2 - (int)h1;
+                if (abs(diff) > 127) {
+                    if (diff > 0) diff -= 255;
+                    else diff += 255;
+                }
+
+                uint8_t hue = (uint8_t)(h1 + diff * blend);
+
+                // micro variation contrôlée (évite uniformité sans flicker)
+                hue += (seed % 3);
+
+                // =========================
+                // BRIGHTNESS STABLE (NO OFF STATE)
+                // =========================
+
+                float breathing = 0.65f + 0.35f * smooth;
+
+                uint8_t sat = 255;
+                uint8_t val = (uint8_t)(210 * breathing);
+
+                // clamp hard pour éviter toute extinction visuelle
+                if (val < 170) val = 170;
+
+                HSV hsv = {
+                    .h = hue,
+                    .s = sat,
+                    .v = val
+                };
+
+                RGB rgb = hsv_to_rgb(hsv);
+                rgb_matrix_set_color(i, rgb.r, rgb.g, rgb.b);
+            }
+
+            break;
+        }
+
+        // ==========================
+        // Mode 2 : Neon
+        // ==========================
+        case 2: {
+            const uint8_t neon_hues[] = {
+                213,   // Magenta
+                128,   // Cyan
+                85     // Vert fluo
+            };
+
+            #define NEON_COUNT (sizeof(neon_hues) / sizeof(neon_hues[0]))
+
+            float anim = fmod(now / 2500.0f, NEON_COUNT);
+
+            int base = (int)anim;
+            float blend = anim - base;
+
+            uint8_t base_hue = interpolate_hue(
+                neon_hues[base],
+                neon_hues[(base + 1) % NEON_COUNT],
+                blend);
+
+            for (uint8_t i = 0; i < RGB_MATRIX_LED_COUNT; i++) {
+
+                uint8_t led_hue = (base_hue + i * 5) % 256;
+
+                HSV hsv = {
+                    .h = led_hue,
+                    .s = 255,
+                    .v = 255
+                };
+
+                RGB rgb = hsv_to_rgb(hsv);
+                rgb_matrix_set_color(i, rgb.r, rgb.g, rgb.b);
+            }
+
+            break;
+        }
+
+        // ==========================
+        // Mode 3 : Rouge fixe
+        // ==========================
+        case 3: {
+            for (uint8_t i = 0; i < RGB_MATRIX_LED_COUNT; i++) {
+                rgb_matrix_set_color(i, 255, 0, 0);
+            }
+            break;
+        }
+
+        // ==========================
+        // Mode 4 : Bleu fixe
+        // ==========================
+        case 4: {
+            for (uint8_t i = 0; i < RGB_MATRIX_LED_COUNT; i++) {
+                rgb_matrix_set_color(i, 0, 80, 255);
+            }
+            break;
+        }
+
+        // ==========================
+        // Mode 5 : Blanc
+        // ==========================
+        case 5: {
+            for (uint8_t i = 0; i < RGB_MATRIX_LED_COUNT; i++) {
+                rgb_matrix_set_color(i, 255, 255, 255);
+            }
+            break;
+        }
+
+        default:
+            custom_rgb_mode = 1;
+            break;
     }
 
     return false;
@@ -1629,13 +1821,6 @@ void rgb_matrix_hs_indicator(void) {
 
 bool rgb_matrix_indicators_advanced_kb(uint8_t led_min, uint8_t led_max) {
 
-    if (host_keyboard_led_state().caps_lock) {
-        for (uint8_t i = 0; i < RGB_MATRIX_LED_COUNT; i++) {
-            rgb_matrix_set_color(i, 160, 0, 255); // violet
-        }
-        return false;
-    }
-
     if (test_white_light_flag) {
         RGB rgb_test_open = hsv_to_rgb((HSV){.h = 0, .s = 0, .v = RGB_MATRIX_VAL_STEP * 5});
         rgb_matrix_set_color_all(rgb_test_open.r, rgb_test_open.g, rgb_test_open.b);
@@ -1686,6 +1871,15 @@ bool rgb_matrix_indicators_advanced_kb(uint8_t led_min, uint8_t led_max) {
 #endif
 
     rgb_matrix_hs_indicator();
+
+    // ==========================
+    // Overrides globaux
+    // ==========================
+
+    // Caps Lock : tout le clavier devient violet
+    if (host_keyboard_led_state().caps_lock) {
+        rgb_matrix_set_color_all(160, 0, 255);
+    }
 
     query();
     return true;
