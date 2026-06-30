@@ -34,3 +34,34 @@ QMK is developed and maintained by Jack Humbert of OLKB with contributions from 
 ## Official Website
 
 [qmk.fm](https://qmk.fm) is the official website of QMK, where you can find links to this page, the documentation, and the keyboards supported by QMK.
+
+
+
+
+
+
+
+INFOS:
+Bootloader: Fn + RMAJ + ESC
+
+Editer la config, faire `qmk compile` dans ~/qmk_firmware si la config est faite
+exemple de config:
+```
+compile.keyboard=monsgeek/m1_v5/m1_v5_us
+compile.keymap=default
+default.keymap=default
+find.keymap=default
+flash.keyboard=monsgeek/m1_v5/m1_v5_us
+mass_compile.keymap=default
+user.keyboard=monsgeek/m1_v5/m1_v5_us
+user.keymap=default
+```
+aller dans l'appli qmk, selectionner le binaire, le path du binaire créé est dans les logs du `qmk compile`
+flasher et tester
+
+liens utils
+https://www.monsgeek.com/faq/how-to-enter-bootloader-mode-how-to-flash-the-firmware/
+https://www.monsgeek.com/faq/how-to-recover-an-m1-v5-us-via-keyboard-after-flashing-m1-v1-qmk-firmware-or-other-wrong-firmware/
+https://www.reddit.com/r/MechanicalKeyboards/comments/1j3l0hx/monsgeek_m1_v5_my_first_mechanical_keyboard_or/?tl=fr
+
+voir le readme du dossier du clavier pour des aides utiles

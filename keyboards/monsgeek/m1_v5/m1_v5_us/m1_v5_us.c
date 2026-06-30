@@ -75,6 +75,8 @@ bool no_record_fg;
 bool lower_sleep = false;
 uint8_t buff[]   = {14, 8, 2, 1, 1, 1, 1, 1, 1, 1, 0};
 
+static bool esc_held = false;
+
 void eeconfig_confinfo_update(uint32_t raw) {
 
     eeconfig_update_kb(raw);
@@ -379,6 +381,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
 
     switch (keycode) {
+        case KC_ESC: {
+            esc_held = record->event.pressed;
+            return true; // garde comportement ESC normal
+        }
         case KC_BSLS: { // Intercepter la touche backslash/pipe
             if (record->event.pressed) { // Si la touche est pressée
                 if (mod_state & MOD_MASK_SHIFT) {
@@ -682,7 +688,19 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
     mod_state = get_mods();
 
     if (index == 0) {
+        // 🎧 volume
+        if (esc_held) {
+            if (clockwise) {
+                tap_code(KC_VOLU);
+            } else {
+                tap_code(KC_VOLD);
+            }
+            return false;
+        }
+
+        // Flèches
         if (mod_state & MOD_BIT(KC_LALT)) {
+            uint8_t saved_mods = mod_state;
             del_mods(MOD_BIT(KC_LALT));
 
             if (clockwise) {
@@ -691,7 +709,7 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
                 tap_code16(KC_LEFT);
             }
 
-            set_mods(mod_state);
+            set_mods(saved_mods);
         } else {
             if (clockwise) {
                 tap_code16(KC_DOWN);
@@ -830,6 +848,33 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
     }
 #endif
     switch (keycode) {
+        case KC_P: {
+            if (record->event.pressed) {
+                if (mod_state & MOD_MASK_ALT) {
+                    tap_code(KC_MPLY);
+                    return false;
+                }
+            }
+            break;
+        }
+        case KC_B: {
+            if (record->event.pressed) {
+                if (mod_state & MOD_MASK_ALT) {
+                    tap_code(KC_MPRV);
+                    return false;
+                }
+            }
+            break;
+        }
+        case KC_N: {
+            if (record->event.pressed) {
+                if (mod_state & MOD_MASK_ALT) {
+                    tap_code(KC_MNXT);
+                    return false;
+                }
+            }
+            break;
+        }
         case QK_BOOT: {
             if (record->event.pressed) {
                 dprintf("into boot!!!\r\n");
@@ -1226,6 +1271,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             }
             return false;
         } break;
+
         default:
             break;
     }
@@ -1582,6 +1628,13 @@ void rgb_matrix_hs_indicator(void) {
 }
 
 bool rgb_matrix_indicators_advanced_kb(uint8_t led_min, uint8_t led_max) {
+
+    if (host_keyboard_led_state().caps_lock) {
+        for (uint8_t i = 0; i < RGB_MATRIX_LED_COUNT; i++) {
+            rgb_matrix_set_color(i, 160, 0, 255); // violet
+        }
+        return false;
+    }
 
     if (test_white_light_flag) {
         RGB rgb_test_open = hsv_to_rgb((HSV){.h = 0, .s = 0, .v = RGB_MATRIX_VAL_STEP * 5});
