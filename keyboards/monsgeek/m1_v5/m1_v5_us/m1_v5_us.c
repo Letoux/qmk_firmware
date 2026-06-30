@@ -885,14 +885,21 @@ bool rgb_matrix_indicators_user(void) {
 
             #define NEON_COUNT (sizeof(neon_hues) / sizeof(neon_hues[0]))
 
-            float anim = fmod(now / 2500.0f, NEON_COUNT);
+            float cycle = now / 12500.0f;
+
+            // on décale légèrement la phase pour éviter que toutes les LEDs "bouclent ensemble"
+            float anim = cycle * NEON_COUNT;
 
             int base = (int)anim;
             float blend = anim - base;
 
+            // sécurité wrap manuel (évite le saut visible de fmod)
+            int base2 = (base + 1) % NEON_COUNT;
+            if (base < 0) base = 0;
+            
             uint8_t base_hue = interpolate_hue(
-                neon_hues[base],
-                neon_hues[(base + 1) % NEON_COUNT],
+                neon_hues[base % NEON_COUNT],
+                neon_hues[base2],
                 blend);
 
             for (uint8_t i = 0; i < RGB_MATRIX_LED_COUNT; i++) {
