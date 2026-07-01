@@ -75,7 +75,7 @@ bool no_record_fg;
 bool lower_sleep = false;
 uint8_t buff[]   = {14, 8, 2, 1, 1, 1, 1, 1, 1, 1, 0};
 
-static bool esc_held = false;
+static bool lsft_held = false;
 uint8_t custom_rgb_mode = 1;
 
 void eeconfig_confinfo_update(uint32_t raw) {
@@ -426,8 +426,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 return false;
             }
             break;
-        case KC_ESC: {
-            esc_held = record->event.pressed;
+        case KC_LSFT: {
+            lsft_held = record->event.pressed;
             return true; // garde comportement ESC normal
         }
         case KC_BSLS: { // Intercepter la touche backslash/pipe
@@ -734,7 +734,7 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
 
     if (index == 0) {
         // 🎧 volume
-        if (esc_held) {
+        if (lsft_held) {
             if (clockwise) {
                 tap_code(KC_VOLU);
             } else {
@@ -1049,7 +1049,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case KC_P: {
             if (record->event.pressed) {
-                if (mod_state & MOD_MASK_ALT) {
+                if (mod_state & MOD_BIT(KC_RALT)) {
                     tap_code(KC_MPLY);
                     return false;
                 }
@@ -1058,7 +1058,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
         }
         case KC_B: {
             if (record->event.pressed) {
-                if (mod_state & MOD_MASK_ALT) {
+                if (mod_state & MOD_BIT(KC_RALT)) {
                     tap_code(KC_MPRV);
                     return false;
                 }
@@ -1067,7 +1067,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
         }
         case KC_N: {
             if (record->event.pressed) {
-                if (mod_state & MOD_MASK_ALT) {
+                if (mod_state & MOD_BIT(KC_RALT)) {
                     tap_code(KC_MNXT);
                     return false;
                 }
