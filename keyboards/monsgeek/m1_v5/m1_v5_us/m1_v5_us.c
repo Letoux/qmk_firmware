@@ -75,7 +75,7 @@ bool no_record_fg;
 bool lower_sleep = false;
 uint8_t buff[]   = {14, 8, 2, 1, 1, 1, 1, 1, 1, 1, 0};
 
-static bool lsft_held = false;
+static bool rsft_held = false;
 uint8_t custom_rgb_mode = 1;
 
 void eeconfig_confinfo_update(uint32_t raw) {
@@ -426,9 +426,9 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 return false;
             }
             break;
-        case KC_LSFT: {
-            lsft_held = record->event.pressed;
-            return true; // garde comportement ESC normal
+        case KC_RSFT: {
+            rsft_held = record->event.pressed;
+            return true;
         }
         case KC_BSLS: { // Intercepter la touche backslash/pipe
             if (record->event.pressed) { // Si la touche est pressée
@@ -734,7 +734,7 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
 
     if (index == 0) {
         // 🎧 volume
-        if (lsft_held) {
+        if (rsft_held) {
             if (clockwise) {
                 tap_code(KC_VOLU);
             } else {
